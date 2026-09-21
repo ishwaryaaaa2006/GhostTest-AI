@@ -10,7 +10,7 @@ import pandas as pd
 app = FastAPI(
     title="GhostTest AI API",
     description="AI-assisted automotive software validation system",
-    version="1.1"
+    version="1.2"
 )
 
 app.add_middleware(
@@ -36,7 +36,12 @@ from ghost_intelligence import analyze_scenario
 from test_vector_generator import generate_test_vector
 from scenario_comparison import compare_scenarios
 from ghost_chat import answer_project_question
+import sys
+from pathlib import Path
 
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+from driver_monitoring.safety_fusion import fuse_safety_risk
 
 def get_connection():
     return sqlite3.connect(DATABASE_FILE)
@@ -51,6 +56,15 @@ class ScenarioRequest(BaseModel):
     road_condition: Literal["Dry", "Wet", "Slippery"]
 
 
+class SafetyFusionRequest(ScenarioRequest):
+    driver_state: Literal[
+        "ALERT",
+        "EYES CLOSING",
+        "DROWSY",
+        "MICROSLEEP"
+    ]
+
+
 class CompareRequest(BaseModel):
     scenario_a: ScenarioRequest
     scenario_b: ScenarioRequest
@@ -58,6 +72,10 @@ class CompareRequest(BaseModel):
 
 class AskRequest(BaseModel):
     question: str
+
+
+def get_connection():
+    return sqlite3.connect(DATABASE_FILE)
 
 
 def run_aeb(request: ScenarioRequest):
@@ -82,69 +100,138 @@ def scenario_dict(request: ScenarioRequest):
     }
 
 
-def explain_scenario(speed, object_distance, sensor_delay, visibility, weather, road_condition, simulation):
+def explain_scenario(
+    speed,
+    object_distance,
+    sensor_delay,
+    visibility,
+    weather,
+    road_condition,
+    simulation
+):
     factors = []
+
     if speed >= 100:
-        factors.append("High vehicle speed significantly increases braking distance.")
+        factors.append(
+            "High vehicle speed significantly increases braking distance."
+        )
     elif speed >= 80:
-        factors.append("Elevated vehicle speed increases the distance required to stop.")
+        factors.append(
+            "Elevated vehicle speed increases the distance required to stop."
+        )
+
     if object_distance <= 10:
-        factors.append("Very short object distance leaves little room for emergency braking.")
+        factors.append(
+            "Very short object distance leaves little room for emergency braking."
+        )
     elif object_distance <= 20:
-        factors.append("Limited object distance reduces the available stopping margin.")
+        factors.append(
+            "Limited object distance reduces the available stopping margin."
+        )
+
     if sensor_delay >= 0.15:
-        factors.append("Sensor delay increases the distance travelled before braking begins.")
+        factors.append(
+            "Sensor delay increases the distance travelled before braking begins."
+        )
     elif sensor_delay > 0:
-        factors.append("Sensor delay adds additional reaction distance.")
+        factors.append(
+            "Sensor delay adds additional reaction distance."
+        )
+
     if visibility == "Poor":
-        factors.append("Poor visibility increases detection delay.")
+        factors.append(
+            "Poor visibility increases detection delay."
+        )
     elif visibility == "Moderate":
-        factors.append("Moderate visibility introduces additional detection delay.")
+        factors.append(
+            "Moderate visibility introduces additional detection delay."
+        )
+
     if weather == "Rain":
-        factors.append("Rain reduces effective braking performance.")
+        factors.append(
+            "Rain reduces effective braking performance."
+        )
     elif weather == "Fog":
-        factors.append("Fog reduces braking performance and is also associated with reduced visibility.")
+        factors.append(
+            "Fog reduces braking performance and is also associated with reduced visibility."
+        )
+
     if road_condition == "Wet":
-        factors.append("Wet road conditions reduce effective deceleration.")
+        factors.append(
+            "Wet road conditions reduce effective deceleration."
+        )
     elif road_condition == "Slippery":
-        factors.append("Slippery road conditions significantly reduce effective braking performance.")
+        factors.append(
+            "Slippery road conditions significantly reduce effective braking performance."
+        )
+
     if simulation["result"] == "FAIL":
-        conclusion = "The vehicle cannot stop within the available distance. This scenario represents a potential AEB failure condition."
+        conclusion = (
+            "The vehicle cannot stop within the available distance. "
+            "This scenario represents a potential AEB failure condition."
+        )
     else:
-        conclusion = "The vehicle can stop within the available distance. The scenario passes the AEB stopping-distance check."
-    return {"risk_factors": factors, "conclusion": conclusion}
+        conclusion = (
+            "The vehicle can stop within the available distance. "
+            "The scenario passes the AEB stopping-distance check."
+        )
+
+    return {
+        "risk_factors": factors,
+        "conclusion": conclusion
+    }
 
 
 @app.get("/")
 def root():
-    return {"message": "GhostTest AI API is running", "status": "active"}
+    return {
+        "message": "GhostTest AI API is running",
+        "status": "active"
+    }
 
 
 @app.get("/api/summary")
 def get_summary():
     connection = get_connection()
     cursor = connection.cursor()
+
     cursor.execute("SELECT COUNT(*) FROM historical_tests")
     historical_tests = cursor.fetchone()[0]
 
     ghost_scenarios = 0
+
     if os.path.exists(UNSEEN_FILE):
         unseen_df = pd.read_csv(UNSEEN_FILE)
         ghost_scenarios = len(unseen_df)
 
-    cursor.execute("SELECT COUNT(*) FROM ghost_scenarios WHERE actual_result = 'FAIL'")
+    cursor.execute(
+        "SELECT COUNT(*) FROM ghost_scenarios WHERE actual_result = 'FAIL'"
+    )
     confirmed_failures = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM ghost_scenarios WHERE prediction_correct = 1")
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM ghost_scenarios WHERE prediction_correct = 1"
+    )
     correct_predictions = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM ghost_scenarios WHERE regression_candidate = 1")
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM ghost_scenarios WHERE regression_candidate = 1"
+    )
     regression_candidates = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM ghost_scenarios")
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM ghost_scenarios"
+    )
     validated_count = cursor.fetchone()[0]
+
     connection.close()
 
     validation_accuracy = 0
+
     if validated_count > 0:
-        validation_accuracy = (correct_predictions / validated_count) * 100
+        validation_accuracy = (
+            correct_predictions / validated_count
+        ) * 100
 
     return {
         "historical_tests": historical_tests,
@@ -159,12 +246,25 @@ def get_summary():
 def get_ghosts():
     if not os.path.exists(GHOST_FILE):
         return []
+
     df = pd.read_csv(GHOST_FILE)
-    df["failure_probability"] = pd.to_numeric(df["failure_probability"], errors="coerce").fillna(0)
+
+    df["failure_probability"] = pd.to_numeric(
+        df["failure_probability"],
+        errors="coerce"
+    ).fillna(0)
+
     if "predicted_result" not in df.columns:
-        df["predicted_result"] = df["failure_probability"].apply(lambda x: "FAIL" if x >= 0.5 else "PASS")
+        df["predicted_result"] = df["failure_probability"].apply(
+            lambda x: "FAIL" if x >= 0.5 else "PASS"
+        )
+
     df = df.fillna("")
-    df = df.sort_values(by="failure_probability", ascending=False)
+    df = df.sort_values(
+        by="failure_probability",
+        ascending=False
+    )
+
     return df.to_dict(orient="records")
 
 
@@ -172,10 +272,13 @@ def get_ghosts():
 def get_historical():
     connection = get_connection()
     connection.row_factory = sqlite3.Row
+
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM historical_tests")
+
     rows = cursor.fetchall()
     connection.close()
+
     return [dict(row) for row in rows]
 
 
@@ -183,23 +286,35 @@ def get_historical():
 def get_regression_candidates():
     connection = get_connection()
     connection.row_factory = sqlite3.Row
+
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM ghost_scenarios WHERE regression_candidate = 1 ORDER BY failure_probability DESC")
+
+    cursor.execute(
+        """
+        SELECT *
+        FROM ghost_scenarios
+        WHERE regression_candidate = 1
+        ORDER BY failure_probability DESC
+        """
+    )
+
     rows = cursor.fetchall()
     connection.close()
+
     return [dict(row) for row in rows]
 
 
 @app.post("/api/ask")
 def ask_ghost(request: AskRequest):
-    # Keep the assistant grounded in the same live data exposed by the dashboard.
     summary = get_summary()
     ghosts = get_ghosts()
     regression = get_regression_candidates()
 
     def simulate_for_ghost(scenario):
         scenario_request = ScenarioRequest(**scenario)
+
         simulation = run_aeb(scenario_request)
+
         explanation = explain_scenario(
             speed=scenario_request.speed,
             object_distance=scenario_request.object_distance,
@@ -209,7 +324,12 @@ def ask_ghost(request: AskRequest):
             road_condition=scenario_request.road_condition,
             simulation=simulation
         )
-        return {"scenario": scenario, "simulation": simulation, "explanation": explanation}
+
+        return {
+            "scenario": scenario,
+            "simulation": simulation,
+            "explanation": explanation
+        }
 
     answer = answer_project_question(
         request.question,
@@ -222,13 +342,14 @@ def ask_ghost(request: AskRequest):
     return {
         "answer": answer,
         "grounded": True,
-        "assistant": "Ghost",
+        "assistant": "Ghost"
     }
 
 
 @app.post("/api/simulate")
 def run_simulation(scenario: ScenarioRequest):
     simulation = run_aeb(scenario)
+
     explanation = explain_scenario(
         speed=scenario.speed,
         object_distance=scenario.object_distance,
@@ -238,6 +359,7 @@ def run_simulation(scenario: ScenarioRequest):
         road_condition=scenario.road_condition,
         simulation=simulation
     )
+
     return {
         "scenario": scenario_dict(scenario),
         "simulation": simulation,
@@ -248,6 +370,7 @@ def run_simulation(scenario: ScenarioRequest):
 @app.post("/api/intelligence")
 def run_intelligence(scenario: ScenarioRequest):
     simulation = run_aeb(scenario)
+
     analysis = analyze_scenario(
         speed=scenario.speed,
         object_distance=scenario.object_distance,
@@ -257,6 +380,7 @@ def run_intelligence(scenario: ScenarioRequest):
         road_condition=scenario.road_condition,
         simulation=simulation
     )
+
     return {
         "scenario": scenario_dict(scenario),
         "simulation": simulation,
@@ -264,9 +388,32 @@ def run_intelligence(scenario: ScenarioRequest):
     }
 
 
+@app.post("/api/safety-fusion")
+def run_safety_fusion(request: SafetyFusionRequest):
+    simulation = run_aeb(request)
+
+    fusion = fuse_safety_risk(
+    driver_state=request.driver_state,
+    speed=request.speed,
+    object_distance=request.object_distance,
+    visibility=request.visibility,
+    weather=request.weather,
+    sensor_delay=request.sensor_delay,
+    road_condition=request.road_condition
+)
+
+    return {
+        "scenario": scenario_dict(request),
+        "driver_state": request.driver_state,
+        "simulation": simulation,
+        "fusion": fusion
+    }
+
+
 @app.post("/api/test-vector")
 def run_test_vector(scenario: ScenarioRequest):
     simulation = run_aeb(scenario)
+
     analysis = analyze_scenario(
         speed=scenario.speed,
         object_distance=scenario.object_distance,
@@ -278,10 +425,14 @@ def run_test_vector(scenario: ScenarioRequest):
     )
 
     vector_scenario = scenario_dict(scenario)
+
     vector_scenario["predicted_result"] = simulation["result"]
     vector_scenario["actual_result"] = simulation["result"]
 
-    test_vector = generate_test_vector(vector_scenario, analysis)
+    test_vector = generate_test_vector(
+        vector_scenario,
+        analysis
+    )
 
     return {
         "test_vector": test_vector,
@@ -296,6 +447,7 @@ def compare_scenario_pair(request: CompareRequest):
     simulation_b = run_aeb(request.scenario_b)
 
     scenario_a = scenario_dict(request.scenario_a)
+
     scenario_a.update({
         "result": simulation_a["result"],
         "stopping_distance": simulation_a["stopping_distance"],
@@ -303,24 +455,40 @@ def compare_scenario_pair(request: CompareRequest):
     })
 
     scenario_b = scenario_dict(request.scenario_b)
+
     scenario_b.update({
         "result": simulation_b["result"],
         "stopping_distance": simulation_b["stopping_distance"],
         "margin": simulation_b["margin"]
     })
 
-    comparison = compare_scenarios(scenario_a, scenario_b)
+    comparison = compare_scenarios(
+        scenario_a,
+        scenario_b
+    )
 
     return {
         "scenario_a": {
             "result": simulation_a["result"],
-            "stopping_distance": round(simulation_a["stopping_distance"], 2),
-            "safety_margin": round(simulation_a["margin"], 2)
+            "stopping_distance": round(
+                simulation_a["stopping_distance"],
+                2
+            ),
+            "safety_margin": round(
+                simulation_a["margin"],
+                2
+            )
         },
         "scenario_b": {
             "result": simulation_b["result"],
-            "stopping_distance": round(simulation_b["stopping_distance"], 2),
-            "safety_margin": round(simulation_b["margin"], 2)
+            "stopping_distance": round(
+                simulation_b["stopping_distance"],
+                2
+            ),
+            "safety_margin": round(
+                simulation_b["margin"],
+                2
+            )
         },
         "comparison": comparison
     }
@@ -328,4 +496,7 @@ def compare_scenario_pair(request: CompareRequest):
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "service": "GhostTest AI"}
+    return {
+        "status": "healthy",
+        "service": "GhostTest AI"
+    }

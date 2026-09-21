@@ -1290,3 +1290,547 @@ tr:hover td {
   }
 
 }
+/* =====================================================
+   GHOSTTEST AI — SECURE ACCESS LOGIN
+===================================================== */
+
+.login-page {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background:
+    radial-gradient(
+      circle at 72% 48%,
+      rgba(0, 180, 255, 0.10),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 25% 80%,
+      rgba(0, 110, 180, 0.08),
+      transparent 35%
+    ),
+    #03070d;
+}
+
+/* background grid */
+
+.login-background-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.14;
+  background-image:
+    linear-gradient(
+      rgba(85, 207, 255, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(85, 207, 255, 0.04) 1px,
+      transparent 1px
+    );
+  background-size: 55px 55px;
+  pointer-events: none;
+}
+
+/* glowing blue horizon */
+
+.login-page::before {
+  content: "";
+  position: absolute;
+  width: 900px;
+  height: 250px;
+  left: -180px;
+  bottom: -70px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(0, 174, 255, 0.10),
+      transparent
+    );
+  transform: perspective(500px) rotateX(65deg);
+  filter: blur(5px);
+  pointer-events: none;
+}
+
+/* =====================================================
+   TOP SYSTEM BAR
+===================================================== */
+
+.login-page::after {
+  content: "●  SYSTEM ONLINE";
+  position: absolute;
+  top: 12px;
+  right: 7%;
+  color: #63d69a;
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(99, 214, 154, 0.6);
+}
+
+
+/* =====================================================
+   MAIN LOGIN LAYOUT
+===================================================== */
+
+.login-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 55px 7%;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 70px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =====================================================
+   LEFT SIDE
+===================================================== */
+
+.login-header {
+  text-align: left;
+  max-width: 650px;
+}
+
+.login-brand {
+  position: absolute;
+  top: 20px;
+  left: 7%;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #e8edf2;
+}
+
+.login-brand::before {
+  content: "👻";
+  margin-right: 8px;
+  filter: drop-shadow(0 0 8px #55cfff);
+}
+
+.login-brand span {
+  color: #55cfff;
+}
+
+.login-project-title {
+  margin-bottom: 22px;
+  color: #55cfff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+}
+
+.login-header h1 {
+  margin: 0;
+  max-width: 620px;
+  color: #eef5f9;
+  font-size: clamp(52px, 5.5vw, 82px);
+  line-height: 0.95;
+  letter-spacing: -4px;
+}
+
+.login-header h1 span {
+  color: #00cfff;
+  text-shadow: 0 0 25px rgba(0, 207, 255, 0.25);
+}
+
+.login-description {
+  max-width: 520px;
+  margin-top: 25px;
+  color: #687b88;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+
+/* =====================================================
+   AUTOMOTIVE VISUAL
+===================================================== */
+
+.login-vehicle-area {
+  position: relative;
+  height: 230px;
+  margin-top: 35px;
+  overflow: hidden;
+}
+
+/* road */
+
+.login-road {
+  position: absolute;
+  left: -10%;
+  right: 0;
+  bottom: 0;
+  height: 115px;
+  transform: perspective(400px) rotateX(55deg);
+  transform-origin: bottom;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 80px,
+      rgba(85, 207, 255, 0.13) 82px,
+      transparent 84px
+    ),
+    linear-gradient(
+      to bottom,
+      transparent,
+      rgba(8, 50, 72, 0.5)
+    );
+  border-top: 1px solid rgba(85, 207, 255, 0.12);
+}
+
+/* futuristic vehicle silhouette */
+
+.login-car {
+  position: absolute;
+  left: 5%;
+  bottom: 25px;
+  width: 430px;
+  height: 90px;
+  opacity: 0.55;
+  transform: skewX(-10deg);
+}
+
+.login-car::before {
+  content: "";
+  position: absolute;
+  left: 50px;
+  top: 15px;
+  width: 300px;
+  height: 52px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(21, 49, 66, 0.95),
+      rgba(3, 12, 18, 0.98)
+    );
+  border: 1px solid rgba(85, 207, 255, 0.20);
+  clip-path: polygon(
+    5% 75%,
+    18% 35%,
+    34% 5%,
+    67% 5%,
+    84% 35%,
+    98% 75%,
+    100% 100%,
+    0 100%
+  );
+  box-shadow:
+    0 0 30px rgba(0, 170, 255, 0.12),
+    inset 0 0 20px rgba(0, 180, 255, 0.04);
+}
+
+.login-car::after {
+  content: "";
+  position: absolute;
+  left: 78px;
+  bottom: 0;
+  width: 48px;
+  height: 48px;
+  border: 6px solid #07121a;
+  border-radius: 50%;
+  box-shadow:
+    245px 0 0 -6px #07121a,
+    245px 0 0 0 rgba(85, 207, 255, 0.18);
+}
+
+
+/* =====================================================
+   FEATURE CARDS
+===================================================== */
+
+.login-features {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.login-feature {
+  width: 105px;
+  min-height: 70px;
+  padding: 13px 10px;
+  background: rgba(7, 18, 27, 0.88);
+  border: 1px solid #163345;
+  border-radius: 5px;
+  text-align: center;
+  transition: 0.25s;
+}
+
+.login-feature:hover {
+  border-color: #55cfff;
+  transform: translateY(-3px);
+  box-shadow: 0 0 18px rgba(85, 207, 255, 0.08);
+}
+
+.login-feature-icon {
+  font-size: 17px;
+  margin-bottom: 8px;
+  color: #55cfff;
+}
+
+.login-feature span {
+  display: block;
+  color: #738692;
+  font-size: 7px;
+  line-height: 1.4;
+  letter-spacing: 0.4px;
+}
+
+
+/* =====================================================
+   RIGHT LOGIN CARD
+===================================================== */
+
+.login-card {
+  width: 100%;
+  max-width: 390px;
+  justify-self: end;
+  padding: 32px;
+  background: rgba(5, 12, 19, 0.88);
+  border: 1px solid #152936;
+  border-radius: 7px;
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.5),
+    0 0 35px rgba(0, 180, 255, 0.025);
+  backdrop-filter: blur(10px);
+}
+
+/* ghost above login */
+
+.login-ghost {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  border-radius: 50%;
+  background: rgba(85, 207, 255, 0.05);
+  border: 1px solid rgba(85, 207, 255, 0.14);
+  box-shadow:
+    0 0 25px rgba(85, 207, 255, 0.12);
+  filter: drop-shadow(0 0 8px rgba(85, 207, 255, 0.6));
+}
+
+.login-card-top {
+  text-align: center;
+}
+
+.login-small-label {
+  display: none;
+}
+
+.login-card h1 {
+  margin: 0;
+  color: #e8edf2;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.login-card-top::after {
+  content: "Please sign in to continue";
+  display: block;
+  margin-top: 10px;
+  color: #566671;
+  font-size: 9px;
+}
+
+.login-system-status {
+  display: none;
+}
+
+.login-divider {
+  height: 1px;
+  margin: 24px 0;
+  background: #15232c;
+}
+
+
+/* =====================================================
+   INPUTS
+===================================================== */
+
+.login-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #536671;
+  font-size: 8px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.login-input {
+  width: 100%;
+  height: 36px;
+  padding: 9px 12px;
+  margin-bottom: 15px;
+  background: #071019;
+  border: 1px solid #2b3944;
+  border-radius: 4px;
+  color: #dce8ed;
+  font-size: 10px;
+  outline: none;
+}
+
+.login-input::placeholder {
+  color: #34434e;
+}
+
+.login-input:focus {
+  border-color: #55cfff;
+  box-shadow: 0 0 0 1px rgba(85, 207, 255, 0.08);
+}
+
+
+/* =====================================================
+   SIGN IN
+===================================================== */
+
+.login-button {
+  width: auto;
+  min-width: 90px;
+  margin-top: 5px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+
+/* =====================================================
+   ERROR
+===================================================== */
+
+.login-error {
+  padding: 9px 10px;
+  margin-bottom: 12px;
+  background: rgba(255, 70, 85, 0.07);
+  border: 1px solid rgba(255, 70, 85, 0.25);
+  border-radius: 4px;
+  color: #ff7777;
+  font-size: 9px;
+}
+
+
+/* =====================================================
+   SECURITY
+===================================================== */
+
+.login-security {
+  margin-top: 22px;
+  padding-top: 15px;
+  border-top: 1px solid #15232c;
+  text-align: center;
+  color: #43525d;
+  font-size: 7px;
+  letter-spacing: 1.2px;
+}
+
+
+/* =====================================================
+   SYSTEM INFO
+===================================================== */
+
+.login-system-info {
+  display: none;
+}
+
+.login-footer {
+  position: absolute;
+  bottom: 18px;
+  left: 7%;
+  color: #2e3c45;
+  font-size: 7px;
+  letter-spacing: 1.3px;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 900px) {
+
+  .login-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 80px 30px 50px;
+  }
+
+  .login-header {
+    text-align: center;
+    margin: auto;
+  }
+
+  .login-header h1 {
+    margin: auto;
+    font-size: 52px;
+  }
+
+  .login-description {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .login-features {
+    justify-content: center;
+  }
+
+  .login-card {
+    justify-self: center;
+  }
+
+  .login-brand {
+    left: 30px;
+  }
+
+  .login-footer {
+    left: 30px;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .login-container {
+    padding: 75px 18px 40px;
+  }
+
+  .login-header h1 {
+    font-size: 42px;
+    letter-spacing: -2px;
+  }
+
+  .login-project-title {
+    font-size: 7px;
+    letter-spacing: 1.8px;
+  }
+
+  .login-features {
+    gap: 6px;
+  }
+
+  .login-feature {
+    width: 85px;
+  }
+
+  .login-vehicle-area {
+    height: 150px;
+  }
+
+  .login-car {
+    transform: scale(0.75) skewX(-10deg);
+    transform-origin: left bottom;
+  }
+
+  .login-card {
+    padding: 25px;
+  }
+}
